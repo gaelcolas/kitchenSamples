@@ -1,0 +1,65 @@
+---
+# Check this doc: https://github.com/test-kitchen/kitchen-azurerm
+# you may set the following environment variables:
+# AZURE_CLIENT_ID="your-azure-client-id-here"
+# AZURE_CLIENT_SECRET="your-client-secret-here"
+# AZURE_TENANT_ID="your-azure-tenant-id-here"
+# (check doc https://github.com/test-kitchen/kitchen-azurerm for more details)
+
+driver:
+  name: azurerm
+  subscription_id: <%= ENV['AZ_SUBSCRIPTION_ID'] %>
+  location: 'westus2'
+  machine_size: 'Standard_D2s_v3'
+
+provisioner:
+  name: shell
+  script: 'tests/integration/provisioning.ps1'
+
+verifier:
+  name: pester
+  test_folder: tests/integration
+  copy_folders:
+    - MyModule
+  pester_install:
+    skipPublisherCheck: true
+    ErrorAction: Stop
+    MaximumVersion: '4.99.999'
+
+platforms:
+  - name: ubuntu-18.04
+    driver:
+      image_urn: Canonical:UbuntuServer:18.04-LTS:latest
+    lifecycle:
+      post_create:
+      - remote: sudo snap install powershell --classic
+
+  - name: win2019
+    driver:
+      image_urn: MicrosoftWindowsServer:WindowsServer:2019-Datacenter:latest
+    verifier:
+      bootstrap: # installs modules from nuget feed by download and unzip.
+        repository_url: "https://www.powershellgallery.com/api/v2"
+        modules:
+          - PackageManagement
+          - Name: PowerShellGet
+            Version: '2.2.4.1'
+
+  - name: win2012r2
+    driver:
+      image_urn: MicrosoftWindowsServer:WindowsServer:2012-R2-Datacenter:latest
+    verifier:
+      pester_install:
+        skipPublisherCheck: true
+        force: true
+        ErrorAction: Stop
+        MaximumVersion: '4.99.999'
+      bootstrap: # installs modules from nuget feed by download and unzip.
+        repository_url: "https://www.powershellgallery.com/api/v2"
+        modules:
+          - PackageManagement
+          - Name: PowerShellGet
+            Version: '2.2.4.1'
+
+suites:
+  - name: default
