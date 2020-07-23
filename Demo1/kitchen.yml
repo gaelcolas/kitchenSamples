@@ -38,6 +38,11 @@ platforms:
     driver:
       image_urn: MicrosoftWindowsServer:WindowsServer:2019-Datacenter:latest
     verifier:
+      pester_install:
+        skipPublisherCheck: true
+        force: true
+        ErrorAction: Stop
+        MaximumVersion: '4.99.999'
       bootstrap: # installs modules from nuget feed by download and unzip.
         repository_url: "https://www.powershellgallery.com/api/v2"
         modules:
