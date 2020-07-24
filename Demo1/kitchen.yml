@@ -13,12 +13,11 @@ driver:
   machine_size: 'Standard_D2s_v3'
 
 provisioner:
-  name: shell
+  name: shell # defaults to bash on linux, so the shebang is important!
   script: 'tests/integration/provisioning.ps1'
 
 verifier:
   name: pester
-  test_folder: tests/integration
   copy_folders:
     - MyModule
   pester_install:
