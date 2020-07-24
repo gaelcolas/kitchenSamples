@@ -5,7 +5,7 @@ Describe 'Making sure Pester works' {
 }
 
 Describe 'Get-String' {
-    it 'Get-String without param should return hellow world' {
+    it 'Get-String without param should return hello world' {
         Get-String | Should -be 'Hello World!'
     }
 }
