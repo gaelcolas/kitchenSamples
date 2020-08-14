@@ -1,0 +1,48 @@
+---
+# Check this doc: https://github.com/test-kitchen/kitchen-azurerm
+# you may set the following environment variables:
+# AZURE_CLIENT_ID="your-azure-client-id-here"
+# AZURE_CLIENT_SECRET="your-client-secret-here"
+# AZURE_TENANT_ID="your-azure-tenant-id-here"
+# (check doc https://github.com/test-kitchen/kitchen-azurerm for more details)
+
+driver:
+  name: azurerm
+  subscription_id: 514e7558-79cd-4f4c-8a76-13399d966dbb
+  location: 'westus2'
+  machine_size: 'Standard_D2s_v3'
+
+provisioner:
+  name: shell # defaults to bash on linux, so the shebang is important!
+  script: 'tests/integration/provisioning.ps1'
+verifier:
+  name: pester
+  pester_install:
+    MaximumVersion: '4.99.999'
+
+platforms:
+  - name: suse-l15
+    driver:
+      image_urn: SUSE:sles-15-sp2:gen2:latest
+    lifecycle:
+      post_create: # as per https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-7#installation-via-package-repository---ubuntu-1804
+      - remote: |
+          timeout 200 tail --pid=$(pidof zypper) -f /dev/null
+          # Install dependencies
+          sudo zypper update -y
+          sudo zypper --non-interactive install curl tar gzip libicu60_2 libopenssl1_0_0 
+          # Download the powershell '.tar.gz' archive
+          curl -L https://github.com/PowerShell/PowerShell/releases/download/v7.0.3/powershell-7.0.3-linux-x64.tar.gz -o /tmp/powershell.tar.gz
+          # Create the target folder where powershell will be placed
+          sudo mkdir -p /opt/microsoft/powershell/7
+          # Expand powershell to the target folder
+          sudo tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
+          # Set execute permissions
+          sudo chmod +x /opt/microsoft/powershell/7/pwsh
+          # Create the symbolic link that points to pwsh
+          sudo ln -s /opt/microsoft/powershell/7/pwsh /usr/bin/pwsh
+      - remote: pwsh -c "'PowerShell Installed'"
+
+
+suites:
+  - name: default

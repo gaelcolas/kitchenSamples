@@ -8,7 +8,7 @@
 
 driver:
   name: azurerm
-  subscription_id: <%= ENV['AZ_SUBSCRIPTION_ID'] %>
+  subscription_id: 514e7558-79cd-4f4c-8a76-13399d966dbb
   location: 'westus2'
   machine_size: 'Standard_D2s_v3'
 

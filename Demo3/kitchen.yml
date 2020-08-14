@@ -1,0 +1,39 @@
+---
+# Check this doc: https://github.com/test-kitchen/kitchen-azurerm
+# you may set the following environment variables:
+# AZURE_CLIENT_ID="your-azure-client-id-here"
+# AZURE_CLIENT_SECRET="your-client-secret-here"
+# AZURE_TENANT_ID="your-azure-tenant-id-here"
+# (check doc https://github.com/test-kitchen/kitchen-azurerm for more details)
+
+driver:
+  name: azurerm
+  subscription_id: 514e7558-79cd-4f4c-8a76-13399d966dbb
+  location: 'westus2'
+  machine_size: 'Standard_D2s_v3'
+
+provisioner:
+  name: shell # defaults to bash on linux, so the shebang is important!
+  script: 'tests/integration/provisioning.ps1'
+verifier:
+  name: pester
+  pester_install:
+    MaximumVersion: '4.99.999'
+
+platforms:
+  - name: ubuntu-18.04
+    driver:
+      image_urn: Canonical:UbuntuServer:18.04-LTS:latest
+    lifecycle:
+      post_create: # as per https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-core-on-linux?view=powershell-7#installation-via-package-repository---ubuntu-1804
+      - remote: |
+          wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
+          sudo dpkg -i packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo add-apt-repository universe
+          sudo apt-get install -y powershell
+      - remote: pwsh -c "'PowerShell Installed'"
+
+
+suites:
+  - name: default
